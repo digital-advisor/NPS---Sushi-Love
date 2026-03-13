@@ -40,7 +40,8 @@ const flowData: { start_step_id: number; steps: Step[] } = {
         { condition: 'eq', from: '0', to: '6', action: 18 },
       ],
     },
-    { uid: 6, type: 'delay', text: '1', connect_step_id: 7 },
+    { uid: 6, type: 'delay', text: '1', connect_step_id: 29 },
+    { uid: 29, type: 'sendDataWH', connect_step_id: 7 },
     { uid: 7, type: 'text', text: 'Que notícia maravilhosa! 😍 Ficamos muito felizes que você tenha gostado.', connect_step_id: 8 },
     { uid: 8, type: 'delay', text: '2', connect_step_id: 9 },
     { uid: 9, type: 'text', text: 'Como sua opinião é muito importante, você poderia gastar 30 segundos para postar esse elogio no Google?\n \nIsso nos ajuda muito!', connect_step_id: 10 },
@@ -92,6 +93,11 @@ export default function WhatsAppSimulator() {
   const [awaitingInput, setAwaitingInput] = useState<Step | null>(null);
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const collectedDataRef = useRef<{
+    nota?: string;
+    motivo?: string;
+    whatsapp?: string;
+  }>({});
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -122,8 +128,28 @@ export default function WhatsAppSimulator() {
         setMessages((prev) => [...prev, { id: Date.now().toString(), sender: 'bot', text: step.text || '', time: formatTime() }]);
         setCurrentStepId(step.connect_step_id || 0);
       } else if (step.type === 'sendDataWH') {
-        // Simulate webhook
-        setCurrentStepId(step.connect_step_id || 0);
+        const now = new Date();
+        const dataToSend = {
+          nota: collectedDataRef.current.nota || '',
+          motivo: collectedDataRef.current.motivo || '',
+          whatsapp: collectedDataRef.current.whatsapp || '',
+          data: now.toLocaleDateString('pt-BR'),
+          hora: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        };
+        
+        try {
+          await fetch('https://n8n-n8n.nk6i21.easypanel.host/webhook-test/sushilovemaracanau', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dataToSend)
+          });
+        } catch (error) {
+          console.error('Erro ao enviar webhook:', error);
+        }
+        
+        if (!isCancelled) {
+          setCurrentStepId(step.connect_step_id || 0);
+        }
       } else if (step.type === 'question') {
         setMessages((prev) => [...prev, { id: Date.now().toString(), sender: 'bot', text: step.text || '', time: formatTime() }]);
         setAwaitingInput(step);
@@ -152,6 +178,10 @@ export default function WhatsAppSimulator() {
     setInputValue('');
 
     if (awaitingInput) {
+      if (awaitingInput.uid === 5) collectedDataRef.current.nota = value;
+      if (awaitingInput.uid === 15 || awaitingInput.uid === 21) collectedDataRef.current.motivo = value;
+      if (awaitingInput.uid === 23) collectedDataRef.current.whatsapp = value;
+
       if (awaitingInput.question_type === 'select') {
         setCurrentStepId(action || awaitingInput.connect_step_id || 0);
       } else if (awaitingInput.question_type === 'number') {
