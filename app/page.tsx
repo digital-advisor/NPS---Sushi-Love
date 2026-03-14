@@ -137,7 +137,7 @@ export default function WhatsAppSimulator() {
         };
         
         try {
-          await fetch('https://n8n-n8n.nk6i21.easypanel.host/webhook-test/sushilovemaracanau', {
+          await fetch('https://n8n-n8n.nk6i21.easypanel.host/webhook/sushilovemaracanau', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dataToSend)
