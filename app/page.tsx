@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Send, MoreVertical, Phone, Video, ArrowLeft, Check, CheckCheck } from 'lucide-react';
-import Image from 'next/image';
 
 // --- Flow Data ---
 type Step = {
@@ -224,11 +223,10 @@ export default function WhatsAppSimulator() {
               <ArrowLeft size={24} />
             </button>
             <div className="relative w-10 h-10 rounded-full overflow-hidden bg-white/20 flex-shrink-0">
-              <Image 
+              <img 
                 src="/logo.jpg" 
                 alt="Sushi Love - Maracanaú Avatar" 
-                fill 
-                className="object-cover"
+                className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
             </div>
